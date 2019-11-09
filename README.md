@@ -19,11 +19,12 @@ It is already explained on `airgeddon` Wiki on [this section] with more detail. 
 
 Plugins system feature is available from `airgeddon>=10.0`.
 
-#### Contact
+#### Contact / Improvements / Extension to other Realtek chipsets
 
-If you have any other wireless card with a different Realtek chipset which is also messing up with airgeddon, feel free to contact me on #airgeddon channel at Discord. Join clicking on the [Public Invitation link].
+If you have any other wireless card with a different Realtek chipset which is also messing up with airgeddon, feel free to contact me by [IRC] or on #airgeddon channel at Discord. Join clicking on the [Public Invitation link].
 
 [airgeddon]: https://github.com/v1s1t0r1sh3r3/airgeddon
 [here]: https://github.com/v1s1t0r1sh3r3/airgeddon/wiki/Cards%20and%20Chipsets
 [this section]: https://github.com/v1s1t0r1sh3r3/airgeddon/wiki/Plugins%20System#how-can-i-install-a-plugin-already-done-by-somebody
+[IRC]: https://webchat.freenode.net/
 [Public Invitation link]: https://discord.gg/sQ9dgt9
