@@ -12,6 +12,7 @@ List of the compatible working cards can be found at `airgeddon` Wiki [here]. If
 For now, the known list of chipsets that this plugin fix to be used with `airgeddon` tool is:
 
  - RTL8812AU <- present in Alfa AWUS036ACH and on many other wireless cards (2.4Ghz/5Ghz - USB)
+ - RTL8814AU <- present in Alfa AWUS1900 (2.4Ghz/5Ghz - USB)
 
 #### How to install an airgeddon plugin?
 
