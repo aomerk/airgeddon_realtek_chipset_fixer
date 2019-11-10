@@ -325,7 +325,7 @@ function realtek_chipset_fixer_override_monitor_option() {
 	return 0
 }
 
-#Override for prepare_et_interfacen function to assure the mode of the interface before the Evil Twin or Enterprise process
+#Override for prepare_et_interface function to assure the mode of the interface before the Evil Twin or Enterprise process
 function realtek_chipset_fixer_override_prepare_et_interface() {
 
 	debug_print
