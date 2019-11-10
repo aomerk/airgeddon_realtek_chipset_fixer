@@ -219,3 +219,105 @@ function realtek_chipset_fixer_override_managed_option() {
 	language_strings "${language}" 115 "read"
 	return 0
 }
+
+#Override for monitor_option function to set the interface on monitor mode and manage the possible name change correctly
+#shellcheck disable=SC2154
+function realtek_chipset_fixer_override_monitor_option() {
+
+	debug_print
+
+	if ! check_to_set_monitor "${1}"; then
+		return 1
+	fi
+
+	disable_rfkill
+
+	language_strings "${language}" 18 "blue"
+	ifconfig "${1}" up
+
+	if ! iwconfig "${1}" rate 1M > /dev/null 2>&1; then
+		if ! set_mode_without_airmon "${1}" "monitor"; then
+			echo
+			language_strings "${language}" 20 "red"
+			language_strings "${language}" 115 "read"
+			return 1
+		else
+			if [ "${1}" = "${interface}" ]; then
+				interface_airmon_compatible=0
+				ifacemode="Monitor"
+			else
+				secondary_interface_airmon_compatible=0
+			fi
+		fi
+	else
+		if [ "${check_kill_needed}" -eq 1 ]; then
+			language_strings "${language}" 19 "blue"
+			${airmon} check kill > /dev/null 2>&1
+			nm_processes_killed=1
+		fi
+
+		desired_interface_name=""
+		if [ "${1}" = "${interface}" ]; then
+			interface_airmon_compatible=1
+
+			set_chipset "${1}" "read_only"
+			if [[ "${requested_chipset}" =~ .*Realtek.*RTL88.* ]]; then
+				new_interface=$(${airmon} stop "${1}" 2> /dev/null | grep -E ".*Realtek.*RTL88.*" | head -n 1)
+			else
+				new_interface=$(${airmon} start "${1}" 2> /dev/null | grep monitor)
+			fi
+			[[ ${new_interface} =~ ^You[[:space:]]already[[:space:]]have[[:space:]]a[[:space:]]([A-Za-z0-9]+)[[:space:]]device ]] && desired_interface_name="${BASH_REMATCH[1]}"
+		else
+			secondary_interface_airmon_compatible=1
+			new_secondary_interface=$(${airmon} start "${1}" 2> /dev/null | grep monitor)
+			[[ ${new_secondary_interface} =~ ^You[[:space:]]already[[:space:]]have[[:space:]]a[[:space:]]([A-Za-z0-9]+)[[:space:]]device ]] && desired_interface_name="${BASH_REMATCH[1]}"
+		fi
+
+		if [ -n "${desired_interface_name}" ]; then
+			echo
+			language_strings "${language}" 435 "red"
+			language_strings "${language}" 115 "read"
+			return 1
+		fi
+
+		if [ "${1}" = "${interface}" ]; then
+			ifacemode="Monitor"
+			[[ ${new_interface} =~ ^phy[0-9]{1,2}[[:blank:]]+([A-Za-z0-9]+)|\]?([A-Za-z0-9]+)\)?$ ]]
+			if [ -n "${BASH_REMATCH[1]}" ]; then
+				new_interface="${BASH_REMATCH[1]}"
+			else
+				new_interface="${BASH_REMATCH[2]}"
+			fi
+
+			if [ "${interface}" != "${new_interface}" ]; then
+				if check_interface_coherence; then
+					interface="${new_interface}"
+					phy_interface=$(physical_interface_finder "${interface}")
+					check_interface_supported_bands "${phy_interface}" "main_wifi_interface"
+					current_iface_on_messages="${interface}"
+				fi
+				echo
+				language_strings "${language}" 21 "yellow"
+			fi
+		else
+			[[ ${new_secondary_interface} =~ ^phy[0-9]{1,2}[[:blank:]]+([A-Za-z0-9]+)|\]?([A-Za-z0-9]+)\)?$ ]]
+			if [ -n "${BASH_REMATCH[1]}" ]; then
+				new_secondary_interface="${BASH_REMATCH[1]}"
+			else
+				new_secondary_interface="${BASH_REMATCH[2]}"
+			fi
+
+			if [ "${1}" != "${new_secondary_interface}" ]; then
+				secondary_wifi_interface="${new_secondary_interface}"
+				current_iface_on_messages="${secondary_wifi_interface}"
+				echo
+				language_strings "${language}" 21 "yellow"
+			fi
+		fi
+	fi
+
+	echo
+	language_strings "${language}" 22 "yellow"
+	language_strings "${language}" 115 "read"
+	return 0
+}
