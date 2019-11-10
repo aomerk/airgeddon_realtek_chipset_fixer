@@ -13,6 +13,9 @@ plugin_minimum_ag_affected_version="10.0"
 plugin_maximum_ag_affected_version=""
 plugin_distros_supported=("*")
 
+#Custom var needed over all the plugin
+realtek_chipset_regexp=".*Realtek.*RTL88.*"
+
 #Override for check_monitor_enabled function to detect correctly monitor mode
 function realtek_chipset_fixer_override_check_monitor_enabled() {
 
@@ -157,8 +160,8 @@ function realtek_chipset_fixer_override_managed_option() {
 			fi
 		else
 			set_chipset "${1}" "read_only"
-			if [[ "${requested_chipset}" =~ .*Realtek.*RTL88.* ]]; then
-				new_interface=$(${airmon} stop "${1}" 2> /dev/null | grep -E ".*Realtek.*RTL88.*" | head -n 1)
+			if [[ "${requested_chipset}" =~ ${realtek_chipset_regexp} ]]; then
+				new_interface=$(${airmon} stop "${1}" 2> /dev/null | grep -E "${realtek_chipset_regexp}" | head -n 1)
 			else
 				new_interface=$(${airmon} stop "${1}" 2> /dev/null | grep station | head -n 1)
 			fi
@@ -192,8 +195,8 @@ function realtek_chipset_fixer_override_managed_option() {
 			fi
 		else
 			set_chipset "${1}" "read_only"
-			if [[ "${requested_chipset}" =~ .*Realtek.*RTL88.* ]]; then
-				new_secondary_interface=$(${airmon} stop "${1}" 2> /dev/null | grep -E ".*Realtek.*RTL88.*" | head -n 1)
+			if [[ "${requested_chipset}" =~ ${realtek_chipset_regexp} ]]; then
+				new_secondary_interface=$(${airmon} stop "${1}" 2> /dev/null | grep -E "${realtek_chipset_regexp}" | head -n 1)
 			else
 				new_secondary_interface=$(${airmon} stop "${1}" 2> /dev/null | grep station | head -n 1)
 			fi
@@ -261,8 +264,8 @@ function realtek_chipset_fixer_override_monitor_option() {
 			interface_airmon_compatible=1
 
 			set_chipset "${1}" "read_only"
-			if [[ "${requested_chipset}" =~ .*Realtek.*RTL88.* ]]; then
-				new_interface=$(${airmon} start "${1}" 2> /dev/null | grep -E ".*Realtek.*RTL88.*" | head -n 1)
+			if [[ "${requested_chipset}" =~ ${realtek_chipset_regexp} ]]; then
+				new_interface=$(${airmon} start "${1}" 2> /dev/null | grep -E "${realtek_chipset_regexp}" | head -n 1)
 			else
 				new_interface=$(${airmon} start "${1}" 2> /dev/null | grep monitor)
 			fi
@@ -332,8 +335,8 @@ function realtek_chipset_fixer_override_prepare_et_interface() {
 	if [ "${ifacemode}" != "Managed" ]; then
 		if [ "${interface_airmon_compatible}" -eq 1 ]; then
 			set_chipset "${interface}" "read_only"
-			if [[ "${requested_chipset}" =~ .*Realtek.*RTL88.* ]]; then
-				new_interface=$(${airmon} stop "${interface}" 2> /dev/null | grep -E ".*Realtek.*RTL88.*" | head -n 1)
+			if [[ "${requested_chipset}" =~ ${realtek_chipset_regexp} ]]; then
+				new_interface=$(${airmon} stop "${interface}" 2> /dev/null | grep -E "${realtek_chipset_regexp}" | head -n 1)
 			else
 				new_interface=$(${airmon} stop "${interface}" 2> /dev/null | grep station | head -n 1)
 			fi
