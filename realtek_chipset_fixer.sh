@@ -129,3 +129,93 @@ function realtek_chipset_fixer_override_set_chipset() {
 		fi
 	fi
 }
+
+#Override for managed_option function to set the interface on managed mode and manage the possible name change correctly
+#shellcheck disable=SC2154
+function realtek_chipset_fixer_override_managed_option() {
+
+	debug_print
+
+	if ! check_to_set_managed "${1}"; then
+		return 1
+	fi
+
+	disable_rfkill
+
+	language_strings "${language}" 17 "blue"
+	ifconfig "${1}" up
+
+	if [ "${1}" = "${interface}" ]; then
+		if [ "${interface_airmon_compatible}" -eq 0 ]; then
+			if ! set_mode_without_airmon "${1}" "managed"; then
+				echo
+				language_strings "${language}" 1 "red"
+				language_strings "${language}" 115 "read"
+				return 1
+			else
+				ifacemode="Managed"
+			fi
+		else
+			set_chipset "${1}" "read_only"
+			if [[ "${requested_chipset}" =~ .*Realtek.*RTL88.* ]]; then
+				new_interface=$(${airmon} stop "${1}" 2> /dev/null | grep -E ".*Realtek.*RTL88.*" | head -n 1)
+			else
+				new_interface=$(${airmon} stop "${1}" 2> /dev/null | grep station | head -n 1)
+			fi
+
+			ifacemode="Managed"
+			[[ ${new_interface} =~ ^phy[0-9]{1,2}[[:blank:]]+([A-Za-z0-9]+)|\]?([A-Za-z0-9]+)\)?$ ]]
+			if [ -n "${BASH_REMATCH[1]}" ]; then
+				new_interface="${BASH_REMATCH[1]}"
+			else
+				new_interface="${BASH_REMATCH[2]}"
+			fi
+
+			if [ "${interface}" != "${new_interface}" ]; then
+				if check_interface_coherence; then
+					interface=${new_interface}
+					phy_interface=$(physical_interface_finder "${interface}")
+					check_interface_supported_bands "${phy_interface}" "main_wifi_interface"
+					current_iface_on_messages="${interface}"
+				fi
+				echo
+				language_strings "${language}" 15 "yellow"
+			fi
+		fi
+	else
+		if [ "${secondary_interface_airmon_compatible}" -eq 0 ]; then
+			if ! set_mode_without_airmon "${1}" "managed"; then
+				echo
+				language_strings "${language}" 1 "red"
+				language_strings "${language}" 115 "read"
+				return 1
+			fi
+		else
+			set_chipset "${1}" "read_only"
+			if [[ "${requested_chipset}" =~ .*Realtek.*RTL88.* ]]; then
+				new_secondary_interface=$(${airmon} stop "${1}" 2> /dev/null | grep -E ".*Realtek.*RTL88.*" | head -n 1)
+			else
+				new_secondary_interface=$(${airmon} stop "${1}" 2> /dev/null | grep station | head -n 1)
+			fi
+
+			[[ ${new_secondary_interface} =~ ^phy[0-9]{1,2}[[:blank:]]+([A-Za-z0-9]+)|\]?([A-Za-z0-9]+)\)?$ ]]
+			if [ -n "${BASH_REMATCH[1]}" ]; then
+				new_secondary_interface="${BASH_REMATCH[1]}"
+			else
+				new_secondary_interface="${BASH_REMATCH[2]}"
+			fi
+
+			if [ "${1}" != "${new_secondary_interface}" ]; then
+				secondary_wifi_interface=${new_secondary_interface}
+				current_iface_on_messages="${secondary_wifi_interface}"
+				echo
+				language_strings "${language}" 15 "yellow"
+			fi
+		fi
+	fi
+
+	echo
+	language_strings "${language}" 16 "yellow"
+	language_strings "${language}" 115 "read"
+	return 0
+}
