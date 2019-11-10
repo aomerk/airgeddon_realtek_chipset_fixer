@@ -362,3 +362,61 @@ function realtek_chipset_fixer_override_prepare_et_interface() {
 		fi
 	fi
 }
+
+#Override for restore_et_interface function to restore the state of the interfaces after Evil Twin or Enterprise process
+#shellcheck disable=SC2154
+function realtek_chipset_fixer_override_restore_et_interface() {
+
+	debug_print
+
+	echo
+	language_strings "${language}" 299 "blue"
+
+	disable_rfkill
+
+	mac_spoofing_desired=0
+
+	iw dev "${iface_monitor_et_deauth}" del > /dev/null 2>&1
+
+	if [ "${et_initial_state}" = "Managed" ]; then
+		set_mode_without_airmon "${interface}" "managed"
+		ifacemode="Managed"
+	else
+		if [ "${interface_airmon_compatible}" -eq 1 ]; then
+			set_chipset "${interface}" "read_only"
+			if [[ "${requested_chipset}" =~ ${realtek_chipset_regexp} ]]; then
+				new_interface=$(${airmon} start "${interface}" 2> /dev/null | grep -E "${realtek_chipset_regexp}" | head -n 1)
+			else
+				new_interface=$(${airmon} start "${interface}" 2> /dev/null | grep monitor)
+			fi
+
+			desired_interface_name=""
+			[[ ${new_interface} =~ ^You[[:space:]]already[[:space:]]have[[:space:]]a[[:space:]]([A-Za-z0-9]+)[[:space:]]device ]] && desired_interface_name="${BASH_REMATCH[1]}"
+			if [ -n "${desired_interface_name}" ]; then
+				echo
+				language_strings "${language}" 435 "red"
+				language_strings "${language}" 115 "read"
+				return
+			fi
+
+			ifacemode="Monitor"
+			[[ ${new_interface} =~ ^phy[0-9]{1,2}[[:blank:]]+([A-Za-z0-9]+)|\]?([A-Za-z0-9]+)\)?$ ]]
+			if [ -n "${BASH_REMATCH[1]}" ]; then
+				new_interface="${BASH_REMATCH[1]}"
+			else
+				new_interface="${BASH_REMATCH[2]}"
+			fi
+
+			if [ "${interface}" != "${new_interface}" ]; then
+				interface=${new_interface}
+				phy_interface=$(physical_interface_finder "${interface}")
+				check_interface_supported_bands "${phy_interface}" "main_wifi_interface"
+				current_iface_on_messages="${interface}"
+			fi
+		else
+			if set_mode_without_airmon "${interface}" "monitor"; then
+				ifacemode="Monitor"
+			fi
+		fi
+	fi
+}
