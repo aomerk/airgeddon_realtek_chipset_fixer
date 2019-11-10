@@ -68,3 +68,64 @@ function realtek_chipset_fixer_override_check_interface_mode() {
 	exit_code=1
 	exit_script_option
 }
+
+#Override for set_chipset to add read_only feature to read the chipset for an interface without modifying chipset var
+function realtek_chipset_fixer_override_set_chipset() {
+
+	debug_print
+
+	chipset=""
+	sedrule1="s/^[0-9a-f]\{1,4\} \|^ //Ig"
+	sedrule2="s/ Network Connection.*//Ig"
+	sedrule3="s/ Wireless.*//Ig"
+	sedrule4="s/ PCI Express.*//Ig"
+	sedrule5="s/ \(Gigabit\|Fast\) Ethernet.*//Ig"
+	sedrule6="s/ \[.*//"
+	sedrule7="s/ (.*//"
+
+	sedruleall="${sedrule1};${sedrule2};${sedrule3};${sedrule4};${sedrule5};${sedrule6};${sedrule7}"
+
+	if [ -f "/sys/class/net/${1}/device/modalias" ]; then
+		bus_type=$(cut -f 1 -d ":" < "/sys/class/net/${1}/device/modalias")
+
+		if [ "${bus_type}" = "usb" ]; then
+			vendor_and_device=$(cut -b 6-14 < "/sys/class/net/${1}/device/modalias" | sed 's/^.//;s/p/:/')
+			if hash lsusb 2> /dev/null; then
+				if [[ -n "${2}" ]] && [[ "${2}" = "read_only" ]]; then
+					requested_chipset=$(lsusb | grep -i "${vendor_and_device}" | head -n 1 | cut -f 3 -d ":" | sed -e "${sedruleall}")
+				else
+					chipset=$(lsusb | grep -i "${vendor_and_device}" | head -n 1 | cut -f 3 -d ":" | sed -e "${sedruleall}")
+				fi
+			fi
+
+		elif [[ "${bus_type}" =~ pci|ssb|bcma|pcmcia ]]; then
+			if [[ -f /sys/class/net/${1}/device/vendor ]] && [[ -f /sys/class/net/${1}/device/device ]]; then
+				vendor_and_device=$(cat "/sys/class/net/${1}/device/vendor"):$(cat "/sys/class/net/${1}/device/device")
+				if [[ -n "${2}" ]] && [[ "${2}" = "read_only" ]]; then
+					requested_chipset=$(lspci -d "${vendor_and_device}" | head -n 1 | cut -f 3 -d ":" | sed -e "${sedruleall}")
+				else
+					chipset=$(lspci -d "${vendor_and_device}" | head -n 1 | cut -f 3 -d ":" | sed -e "${sedruleall}")
+				fi
+			else
+				if hash ethtool 2> /dev/null; then
+					ethtool_output=$(ethtool -i "${1}" 2>&1)
+					vendor_and_device=$(printf "%s" "${ethtool_output}" | grep "bus-info" | cut -f 3 -d ":" | sed 's/^ //')
+					if [[ -n "${2}" ]] && [[ "${2}" = "read_only" ]]; then
+						requested_chipset=$(lspci | grep "${vendor_and_device}" | head -n 1 | cut -f 3 -d ":" | sed -e "${sedruleall}")
+					else
+						chipset=$(lspci | grep "${vendor_and_device}" | head -n 1 | cut -f 3 -d ":" | sed -e "${sedruleall}")
+					fi
+				fi
+			fi
+		fi
+	elif [[ -f /sys/class/net/${1}/device/idVendor ]] && [[ -f /sys/class/net/${1}/device/idProduct ]]; then
+		vendor_and_device=$(cat "/sys/class/net/${1}/device/idVendor"):$(cat "/sys/class/net/${1}/device/idProduct")
+		if hash lsusb 2> /dev/null; then
+			if [[ -n "${2}" ]] && [[ "${2}" = "read_only" ]]; then
+				requested_chipset=$(lsusb | grep -i "${vendor_and_device}" | head -n 1 | cut -f 3 -d ":" | sed -e "${sedruleall}")
+			else
+				chipset=$(lsusb | grep -i "${vendor_and_device}" | head -n 1 | cut -f 3 -d ":" | sed -e "${sedruleall}")
+			fi
+		fi
+	fi
+}
