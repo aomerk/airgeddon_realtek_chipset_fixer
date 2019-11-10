@@ -321,3 +321,41 @@ function realtek_chipset_fixer_override_monitor_option() {
 	language_strings "${language}" 115 "read"
 	return 0
 }
+
+#Override for prepare_et_interfacen function to assure the mode of the interface before the Evil Twin or Enterprise process
+function realtek_chipset_fixer_override_prepare_et_interface() {
+
+	debug_print
+
+	et_initial_state=${ifacemode}
+
+	if [ "${ifacemode}" != "Managed" ]; then
+		if [ "${interface_airmon_compatible}" -eq 1 ]; then
+			set_chipset "${interface}" "read_only"
+			if [[ "${requested_chipset}" =~ .*Realtek.*RTL88.* ]]; then
+				new_interface=$(${airmon} stop "${interface}" 2> /dev/null | grep -E ".*Realtek.*RTL88.*" | head -n 1)
+			else
+				new_interface=$(${airmon} stop "${interface}" 2> /dev/null | grep station | head -n 1)
+			fi
+
+			ifacemode="Managed"
+			[[ ${new_interface} =~ ^phy[0-9]{1,2}[[:blank:]]+([A-Za-z0-9]+)|\]?([A-Za-z0-9]+)\)?$ ]]
+			if [ -n "${BASH_REMATCH[1]}" ]; then
+				new_interface="${BASH_REMATCH[1]}"
+			else
+				new_interface="${BASH_REMATCH[2]}"
+			fi
+
+			if [ "${interface}" != "${new_interface}" ]; then
+				if check_interface_coherence; then
+					interface=${new_interface}
+					phy_interface=$(physical_interface_finder "${interface}")
+					check_interface_supported_bands "${phy_interface}" "main_wifi_interface"
+					current_iface_on_messages="${interface}"
+				fi
+				echo
+				language_strings "${language}" 15 "yellow"
+			fi
+		fi
+	fi
+}
