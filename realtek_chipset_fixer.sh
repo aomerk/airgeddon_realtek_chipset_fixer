@@ -262,7 +262,7 @@ function realtek_chipset_fixer_override_monitor_option() {
 
 			set_chipset "${1}" "read_only"
 			if [[ "${requested_chipset}" =~ .*Realtek.*RTL88.* ]]; then
-				new_interface=$(${airmon} stop "${1}" 2> /dev/null | grep -E ".*Realtek.*RTL88.*" | head -n 1)
+				new_interface=$(${airmon} start "${1}" 2> /dev/null | grep -E ".*Realtek.*RTL88.*" | head -n 1)
 			else
 				new_interface=$(${airmon} start "${1}" 2> /dev/null | grep monitor)
 			fi
