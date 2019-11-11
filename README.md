@@ -1,5 +1,3 @@
-# This is still under construction
-
 # airgeddon Realtek chipset fixer
 
 > An airgeddon plugin to fix some problematic Realtek chipsets.
