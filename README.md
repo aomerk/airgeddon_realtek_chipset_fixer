@@ -20,6 +20,17 @@ It is already explained on `airgeddon` Wiki on [this section] with more detail. 
 
 Plugins system feature is available from `airgeddon>=10.0`.
 
+#### What is fixed using this plugin?
+
+Basically, this fix for the listed Realtek cards the ability to switch mode from monitor to managed and viceversa from airgeddon menus.
+
+Known problems even using the plugin:
+
+ - WPS wash scanning
+ - Dos during Evil Twin attacks (while the interface is splitted into two logical interfaces)
+
+This known problems are not related to airgeddon and can't be fixed on airgeddon's side. They are directly related to driver capabilities so for now they can't be fixed.
+
 #### Contact / Improvements / Extension to other Realtek chipsets
 
 If you have any other wireless card with a different Realtek chipset which is also messing up with airgeddon, feel free to contact me by [IRC] or on #airgeddon channel at Discord. Join clicking on the [Public Invitation link].
