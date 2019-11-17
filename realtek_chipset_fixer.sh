@@ -85,8 +85,9 @@ function realtek_chipset_fixer_override_set_chipset() {
 	sedrule5="s/ \(Gigabit\|Fast\) Ethernet.*//Ig"
 	sedrule6="s/ \[.*//"
 	sedrule7="s/ (.*//"
+	sedrule8="s|802\.11a/b/g/n/ac.*||Ig"
 
-	sedruleall="${sedrule1};${sedrule2};${sedrule3};${sedrule4};${sedrule5};${sedrule6};${sedrule7}"
+	sedruleall="${sedrule1};${sedrule2};${sedrule3};${sedrule4};${sedrule5};${sedrule6};${sedrule7};${sedrule8}"
 
 	if [ -f "/sys/class/net/${1}/device/modalias" ]; then
 		bus_type=$(cut -f 1 -d ":" < "/sys/class/net/${1}/device/modalias")
