@@ -10,6 +10,7 @@ List of the compatible working cards can be found at `airgeddon` Wiki [here]. If
 For now, the known list of chipsets that this plugin fix to be used flawlessly with `airgeddon` tool is:
 
  - RTL8812AU <- present in Alfa AWUS036ACH (2.4Ghz/5Ghz - USB)
+ - RTL8812BU <- present in Comfast CF-913AC (2.4Ghz/5Ghz - USB)
  - RTL8814AU <- present in Alfa AWUS1900 (2.4Ghz/5Ghz - USB)
 
 There are more cards and devices using the chipsets listed here. We listed only some examples of cards containing these chipsets.
@@ -27,7 +28,7 @@ Basically, this fix for the listed Realtek cards the ability to switch mode from
 Known problems even using the plugin:
 
  - WPS wash scanning
- - Dos during Evil Twin attacks (while the interface is splitted into two logical interfaces)
+ - DoS during Evil Twin attacks (while the interface is splitted into two logical interfaces)
 
 This known problems are not related to airgeddon and can't be fixed on airgeddon's side. They are directly related to driver capabilities so for now they can't be fixed.
 
