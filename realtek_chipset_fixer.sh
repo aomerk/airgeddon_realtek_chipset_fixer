@@ -10,7 +10,7 @@ plugin_author="OscarAkaElvis"
 plugin_enabled=1
 
 plugin_minimum_ag_affected_version="10.0"
-plugin_maximum_ag_affected_version=""
+plugin_maximum_ag_affected_version="10.0"
 plugin_distros_supported=("*")
 
 #Custom var needed over all the plugin
