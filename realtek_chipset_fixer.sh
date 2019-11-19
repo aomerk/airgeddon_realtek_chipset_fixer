@@ -14,7 +14,7 @@ plugin_maximum_ag_affected_version="10.0"
 plugin_distros_supported=("*")
 
 #Custom var needed over all the plugin
-realtek_chipset_regexp=".*Realtek.*RTL88.*"
+realtek_chipset_regexp=".*Realtek.*RTL88.*|.*TP-Link TL-WN722N.*"
 
 #Override for check_monitor_enabled function to detect correctly monitor mode
 function realtek_chipset_fixer_override_check_monitor_enabled() {
