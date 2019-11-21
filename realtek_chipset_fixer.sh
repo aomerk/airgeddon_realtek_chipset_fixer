@@ -48,7 +48,7 @@ function realtek_chipset_fixer_override_check_interface_mode() {
 
 	modemanaged=$(iwconfig "${1}" 2> /dev/null | grep Mode: | cut -d ':' -f 2 | cut -d ' ' -f 1)
 
-	if [[ ${modemanaged} = "Managed" ]]; then
+	if [[ ${modemanaged} = "Managed" ]] || [[ ${modemanaged} = "Auto" ]]; then
 		ifacemode="Managed"
 		return 0
 	fi
